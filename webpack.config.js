@@ -1,14 +1,17 @@
 const path = require('path');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const HtmlWebPackPlugin = require("html-webpack-plugin");
 
 module.exports = {
-    entry: [
-      './src/index.js'
-    ],
+    entry: {
+       index : './src/index.js',
+       style: './src/index.less'
+    },
     output: {
       path: __dirname + '/dist',
-      publicPath: '/',
-      filename: 'bundle.js'
+      publicPath: './',
+      filename: '[name]-bundle.js',
+      chunkFilename: '[name].bundle.js'
     },
     devServer: {
       contentBase: './dist'
@@ -21,12 +24,26 @@ module.exports = {
                 exclude: /node_modules/,
                 use: ['babel-loader']
             },
-            {
+           /*  {
                 test: /\.css$/,
                 use: ExtractTextPlugin.extract(
                     {
                         fallback: 'style-loader',
                         use: ['css-loader']
+                    }
+                )
+            }, */
+            {
+                test: /\.less$/,
+                use: ExtractTextPlugin.extract(
+                    {
+                        fallback: 'style-loader',
+                        use: [
+                            {
+                                loader: 'css-loader', options: {minimize: true}
+                            },
+                        'less-loader',
+                    ],
                     }
                 )
             },
@@ -38,13 +55,26 @@ module.exports = {
                         limit: 10000
                     }
                 }                
+            },
+            {
+                test: /\.html$/,
+                use: [
+                  {
+                    loader: "html-loader",
+                    options: { minimize: false}
+                  }
+                ]
             }
         ]      
     },
     resolve: {
-        extensions: ['*', '.js', '.jsx']
+        extensions: ['.js', '.jsx']
     },
     plugins: [ 
-        new ExtractTextPlugin({filename: 'style.css'})
+        new ExtractTextPlugin({filename: 'styles/[name].css',allChunks: true,}),
+        new HtmlWebPackPlugin({
+            template: "./src/index.html",
+            filename: "./index.html"
+          })
     ]
   };
